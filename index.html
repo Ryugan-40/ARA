@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A small question</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;800&family=Caveat:wght@600&display=swap">
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#2a1233; --card:#3a1c47; --ink:#fbeee6; --muted:#d9bfd0; --rose:#ff7a90; --on-rose:#2a1233; --gold:#ffc971;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    color-scheme: light;
+    --bg:#fff1ec; --card:#ffe0d8; --ink:#3a1c47; --muted:#6b4a73; --rose:#d6336c; --on-rose:#fff7f3; --gold:#a8590a;
+  }
+}
+:root[data-theme="light"]{color-scheme:light;--bg:#fff1ec;--card:#ffe0d8;--ink:#3a1c47;--muted:#6b4a73;--rose:#d6336c;--on-rose:#fff7f3;--gold:#a8590a}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:1.05rem;line-height:1.55;overflow-x:hidden}
+main{min-height:100vh;display:grid;place-items:center;padding:2rem 1.25rem}
+section[hidden]{display:none}
+
+/* Screen 1 */
+#ask{text-align:center;max-width:36rem}
+#ask h1{font-size:clamp(2.4rem,9vw,4.6rem);line-height:1.02;font-weight:800;letter-spacing:-0.03em;margin:0 0 1rem}
+#ask p{color:var(--muted);margin:0 0 2.2rem}
+.row{display:flex;gap:1rem;justify-content:center;align-items:center;flex-wrap:wrap}
+.slot{min-width:9rem;min-height:3.4rem;display:grid;place-items:center}
+button{font:inherit;font-weight:600;border:0;border-radius:999px;padding:.9rem 1.7rem;cursor:pointer;min-height:3.4rem}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+#yes{background:var(--rose);color:var(--on-rose);font-weight:800;font-size:1.15rem;transition:transform .25s ease}
+#no{background:transparent;color:var(--ink);border:2px solid var(--muted);transition:left .18s ease,top .18s ease}
+#no.free{position:fixed;z-index:5}
+.dots{margin-top:2.4rem;font-size:.9rem;color:var(--muted)}
+
+/* Screen 2 */
+#reply{max-width:34rem;width:100%;text-align:left}
+#reply h2{font-size:clamp(2rem,7vw,3.2rem);line-height:1.05;font-weight:800;letter-spacing:-0.03em;margin:0 0 1.6rem}
+.block{background:var(--card);border-radius:1.25rem;padding:1.25rem 1.4rem;margin:0 0 1rem}
+.block h3{margin:0 0 .35rem;font-size:1rem;font-weight:600;color:var(--muted)}
+.block p{margin:0;font-size:1.15rem}
+.block.big{border-left:6px solid var(--rose);border-radius:.4rem 1.25rem 1.25rem .4rem}
+.fine{font-size:.9rem;color:var(--muted);margin:1.4rem 0 1.8rem}
+.sign{font-family:"Caveat","Segoe Script",cursive;font-size:2rem;line-height:1.1;color:var(--gold)}
+
+.heart{position:fixed;bottom:-2rem;z-index:10;pointer-events:none;animation:rise var(--d,3s) ease-in forwards}
+@keyframes rise{to{transform:translateY(-110vh) rotate(var(--r,20deg));opacity:0}}
+@media (prefers-reduced-motion: reduce){
+  #yes,#no{transition:none}
+  .heart{display:none}
+}
+</style>
+</head>
+<body>
+<main>
+  <section id="ask">
+    <h1 id="title"></h1>
+    <p id="sub"></p>
+    <div class="row">
+      <button id="yes" type="button">Yes, I forgive you</button>
+      <div class="slot"><button id="no" type="button">No</button></div>
+    </div>
+    <div class="dots" id="dodgeCount" aria-live="polite"></div>
+  </section>
+
+  <section id="reply" hidden>
+    <h2 id="thanks"></h2>
+    <div class="block"><h3>What you told me, and I only half heard</h3><p id="said"></p></div>
+    <div class="block big"><h3>What I'll do from now on</h3><p id="promise"></p></div>
+    <div class="block"><h3>Also</h3><p id="extra"></p></div>
+    <p class="fine" id="fine"></p>
+    <div class="sign" id="sign"></div>
+  </section>
+</main>
+
+<script>
+/* ===== EDIT THESE ===== */
+const CONFIG = {
+  herName: "Dear ARA",
+  yourName: "Dev",
+  said: "I know you said that you were in hostel with your friend had dal chawal in lunch and slept and and hostel gate closes in 6:30 ",
+  promise: "If I'm busy or on a call, I'll say so and come back to you properly, instead of pretending I'm listening or reading your text.",
+  extra: "Next time we’re together, I’ll be fully present with you — no distractions.",
+  fine: "Terms: I will not ask silly questions mid-story. I will ask good ones after."
+};
+/* ====================== */
+
+const $ = id => document.getElementById(id);
+$("title").textContent = `${CONFIG.herName}, will you forgive me?`;
+$("sub").textContent = "I messed up. I'd like to make it right. Quick question first:";
+$("thanks").textContent = "Thank you. Now the real part.";
+$("said").textContent = CONFIG.said;
+$("promise").textContent = CONFIG.promise;
+$("extra").textContent = CONFIG.extra;
+$("fine").textContent = CONFIG.fine;
+$("sign").textContent = `Sorry, and I love you. ${CONFIG.yourName}`;
+
+const yes = $("yes"), no = $("no");
+const lines = ["Are you sure?","Really?","Think again","I'll bring snacks","Pretty please","I'm listening this time","Last chance (not really)","Okay okay","I'm running out of ideas","Fine, I'll stop"];
+let dodges = 0, gaveIn = false;
+
+function overlaps(a,b,pad){return !(a.right+pad<b.left||a.left-pad>b.right||a.bottom+pad<b.top||a.top-pad>b.bottom)}
+
+function dodge(){
+  if(gaveIn) return;
+  dodges++;
+  if(dodges >= 10){
+    gaveIn = true;
+    no.classList.remove("free");
+    no.style.left = no.style.top = "";
+    no.textContent = "Okay, yes";
+    no.style.borderColor = "var(--rose)";
+    $("dodgeCount").textContent = "The No button has given up.";
+    return;
+  }
+  no.textContent = lines[dodges-1];
+  $("dodgeCount").textContent = `No button dodged ${dodges} time${dodges>1?"s":""}.`;
+  yes.style.transform = `scale(${Math.min(1 + dodges*0.06, 1.55)})`;
+  no.classList.add("free");
+  const w = no.offsetWidth, h = no.offsetHeight, pad = 12;
+  const vw = document.documentElement.clientWidth, vh = window.innerHeight;
+  const yr = yes.getBoundingClientRect();
+  let x, y;
+  for(let i=0;i<30;i++){
+    x = pad + Math.random()*Math.max(1, vw - w - pad*2);
+    y = pad + Math.random()*Math.max(1, vh - h - pad*2);
+    if(!overlaps({left:x,top:y,right:x+w,bottom:y+h}, yr, 24)) break;
+  }
+  no.style.left = x + "px";
+  no.style.top = y + "px";
+}
+
+let lastDodge = 0;
+function tryDodge(){ const t = Date.now(); if(gaveIn || t - lastDodge < 250) return; lastDodge = t; dodge(); }
+no.addEventListener("pointerenter", e => { if(e.pointerType !== "touch") tryDodge(); });
+no.addEventListener("pointerdown", e => { e.preventDefault(); tryDodge(); });
+no.addEventListener("focus", () => { if(no.matches(":focus-visible")) tryDodge(); });
+no.addEventListener("click", e => { if(gaveIn) forgive(); else { e.preventDefault(); dodge(); } });
+yes.addEventListener("click", forgive);
+
+function forgive(){
+  $("ask").hidden = true;
+  $("reply").hidden = false;
+  window.scrollTo(0,0);
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  for(let i=0;i<26;i++){
+    const s = document.createElement("span");
+    s.className = "heart";
+    s.textContent = ["♥","💗","💖"][i%3];
+    s.style.left = Math.random()*100 + "vw";
+    s.style.fontSize = (1 + Math.random()*1.6) + "rem";
+    s.style.setProperty("--d", (2.4 + Math.random()*1.8) + "s");
+    s.style.setProperty("--r", (Math.random()*60-30) + "deg");
+    s.style.animationDelay = Math.random()*0.8 + "s";
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(), 5000);
+  }
+}
+</script>
+</body>
+</html>
